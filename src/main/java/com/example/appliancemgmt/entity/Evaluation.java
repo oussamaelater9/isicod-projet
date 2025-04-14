@@ -16,18 +16,15 @@ public class Evaluation {
     @Column(nullable = false)
     private String outcome;
 
+    @Column
     private String notes;
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @ManyToOne
-    @JoinColumn(name = "appliance_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "appliance_id", nullable = false)
     private Appliance appliance;
-
-    @ManyToOne
-    @JoinColumn(name = "client_id")
-    private Client client;
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -39,9 +36,7 @@ public class Evaluation {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
     public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setCreatedAt( LocalDateTime createdAt) { this.createdAt = createdAt; }
     public Appliance getAppliance() { return appliance; }
     public void setAppliance(Appliance appliance) { this.appliance = appliance; }
-    public Client getClient() { return client; }
-    public void setClient(Client client) { this.client = client; }
 }
