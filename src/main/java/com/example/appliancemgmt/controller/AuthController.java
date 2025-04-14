@@ -1,5 +1,6 @@
 package com.example.appliancemgmt.controller;
 
+import com.example.appliancemgmt.dto.SignUpRequest;
 import com.example.appliancemgmt.entity.User;
 import com.example.appliancemgmt.service.UserService;
 import com.example.appliancemgmt.util.JwtUtil;
@@ -18,7 +19,7 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signUp(@RequestBody UserService.SignUpRequest signUpRequest) {
+    public ResponseEntity<String> signUp(@RequestBody SignUpRequest signUpRequest) {
         try {
             User user = userService.signUp(signUpRequest);
             return ResponseEntity.status(201).body("User created: " + user.getUsername());

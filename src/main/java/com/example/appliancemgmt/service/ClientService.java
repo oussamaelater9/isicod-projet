@@ -1,7 +1,10 @@
 package com.example.appliancemgmt.service;
 
+import com.example.appliancemgmt.dto.AddClientDTO;
 import com.example.appliancemgmt.entity.Client;
+import com.example.appliancemgmt.entity.User;
 import com.example.appliancemgmt.repository.ClientRepository;
+import com.example.appliancemgmt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +17,9 @@ import java.util.Optional;
 public class ClientService {
     @Autowired
     private ClientRepository clientRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public List<Client> getAllClients() {
         return clientRepository.findAll();
@@ -31,14 +37,30 @@ public class ClientService {
         return clientRepository.findByNameContainingIgnoreCase(name);
     }
 
-    public Client createClient(Client client) {
+    public Client createClient(AddClientDTO client,Long id) {
         if (clientRepository.existsByEmail(client.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
         }
         if (client.getName() == null || client.getEmail() == null) {
             throw new IllegalArgumentException("Name and email are required");
         }
-        return clientRepository.save(client);
+
+
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Authenticated user not found"));
+        Client newClient = new Client();
+        if (user != null) {
+
+            newClient.setAddress(client.getAdress());
+            newClient.setPhone(client.getPhone());
+            newClient.setCompanyName(client.getCompanyName());
+            newClient.setEmail(client.getEmail());
+            newClient.setName(client.getName());
+            newClient.setUser(user);
+
+        }
+
+        return clientRepository.save(newClient);
+
     }
 
     public Client updateClient(Long id, Client updatedClient) {

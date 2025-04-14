@@ -1,25 +1,14 @@
 package com.example.appliancemgmt.dto;
 
 public class SignUpRequest {
+
     private String username;
     private String password;
-    private String companyName;
-    private String contact;
+    private String name;
     private String email;
     private String phone;
-    private String industry;
     private String address;
-    private String name ;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    // Getters and Setters
     public String getUsername() {
         return username;
     }
@@ -36,20 +25,12 @@ public class SignUpRequest {
         this.password = password;
     }
 
-    public String getCompanyName() {
-        return companyName;
+    public String getName() {
+        return name;
     }
 
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public String getContact() {
-        return contact;
-    }
-
-    public void setContact(String contact) {
-        this.contact = contact;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmail() {
@@ -66,14 +47,6 @@ public class SignUpRequest {
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    public String getIndustry() {
-        return industry;
-    }
-
-    public void setIndustry(String industry) {
-        this.industry = industry;
     }
 
     public String getAddress() {

@@ -3,6 +3,8 @@ package com.example.appliancemgmt.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -10,6 +12,47 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private String email;
+    @Column(nullable = false)
+    private String phone;
+    @Column(nullable = false)
+    private String address;
+    @Column(nullable = false)
+    private String name;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -24,9 +67,9 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private Client client;
+    private List<Client> clients = new ArrayList<>();
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -39,8 +82,8 @@ public class User {
     public void setRole(Role role) { this.role = role; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public Client getClient() { return client; }
-    public void setClient(Client client) { this.client = client; }
+    public List<Client> getClients() { return clients; }
+    public void setClients(List<Client> clients) { this.clients = clients; }
 
     public enum Role {
         ADMIN, CONSULTANT

@@ -1,5 +1,6 @@
 package com.example.appliancemgmt.controller;
 
+import com.example.appliancemgmt.dto.AddClientDTO;
 import com.example.appliancemgmt.entity.Client;
 import com.example.appliancemgmt.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +41,10 @@ public class ClientController {
         return ResponseEntity.ok(clients);
     }
 
-    @PostMapping
-    public ResponseEntity<Client> createClient(@RequestBody Client client) {
+    @PostMapping("/addClient/{id}")
+    public ResponseEntity<Client> createClient(@RequestBody AddClientDTO client ,@PathVariable Long id) {
         try {
-            Client createdClient = clientService.createClient(client);
+            Client createdClient = clientService.createClient(client,id);
             return ResponseEntity.status(201).body(createdClient);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);
