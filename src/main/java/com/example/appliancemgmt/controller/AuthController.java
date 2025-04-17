@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -30,13 +32,21 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
-        User user = userService.getUserByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+        Optional<User> userOptional = userService.getUserByUsername(loginRequest.getUsername());
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Invalid username");
+        }
+        User user = userOptional.get();
         if (!user.getPassword().equals(loginRequest.getPassword())) {
-            throw new IllegalArgumentException("Invalid credentials");
+            return ResponseEntity.badRequest().body("Invalid password");
         }
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
         return ResponseEntity.ok(token);
+    }
+
+    @RequestMapping(value = "/login", method = RequestMethod.OPTIONS)
+    public ResponseEntity<Void> handleOptions() {
+        return ResponseEntity.ok().build();
     }
 }
 

@@ -16,7 +16,7 @@ public class Session {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SessionStatus status;
-
+    @Column(nullable = false)
     private String notes;
 
     @Column(nullable = false)
