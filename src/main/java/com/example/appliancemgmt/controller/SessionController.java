@@ -1,5 +1,6 @@
 package com.example.appliancemgmt.controller;
 
+import com.example.appliancemgmt.dto.AddSessionDTO;
 import com.example.appliancemgmt.entity.Session;
 import com.example.appliancemgmt.entity.SessionStatus;
 import com.example.appliancemgmt.service.SessionService;
@@ -41,9 +42,9 @@ public class SessionController {
     }
 
     @PostMapping
-    public ResponseEntity<Session> createSession(@RequestBody Session session, @RequestParam Long applianceId) {
+    public ResponseEntity<Session> createSession(@RequestBody AddSessionDTO sessionDTO, @RequestParam Long applianceId) {
         try {
-            Session createdSession = sessionService.createSession(session, applianceId);
+            Session createdSession = sessionService.createSession(sessionDTO, applianceId);
             return ResponseEntity.status(201).body(createdSession);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);

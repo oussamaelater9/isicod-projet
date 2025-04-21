@@ -39,5 +39,6 @@ public class Session {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public Appliance getAppliance() { return appliance; }
     public void setAppliance(Appliance appliance) { this.appliance = appliance; }
+
 }
 

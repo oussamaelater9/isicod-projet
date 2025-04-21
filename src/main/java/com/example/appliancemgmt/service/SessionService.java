@@ -1,5 +1,7 @@
 package com.example.appliancemgmt.service;
 
+import com.example.appliancemgmt.dto.AddSessionDTO;
+import com.example.appliancemgmt.dto.SessionsResponseDTO;
 import com.example.appliancemgmt.entity.Appliance;
 import com.example.appliancemgmt.entity.Session;
 import com.example.appliancemgmt.entity.SessionStatus;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -21,8 +24,16 @@ public class SessionService {
     @Autowired
     private ApplianceRepository applianceRepository;
 
-    public List<Session> getAllSessions() {
-        return sessionRepository.findAll();
+    public List<SessionsResponseDTO> findAll() {
+        return sessionRepository.findAll().stream()
+                .map(session -> new SessionsResponseDTO(
+                        session.getId(),
+                        session.getApplianceId(),
+                        session.getStatus(),
+                        session.getStartTime(),
+                        session.getNotes()
+                ))
+                .collect(Collectors.toList());
     }
 
     public Optional<Session> getSessionById(Long id) {
@@ -37,16 +48,21 @@ public class SessionService {
         return sessionRepository.findByStatus(status);
     }
 
-    public Session createSession(Session session, Long applianceId) {
-        if (session.getSessionDate() == null || session.getStatus() == null) {
+    public Session createSession(AddSessionDTO sessionDTO, Long applianceId) {
+        if (sessionDTO.getSessionDate() == null || sessionDTO.getStatus() == null) {
             throw new IllegalArgumentException("Session date and status are required");
         }
         Optional<Appliance> appliance = applianceRepository.findById(applianceId);
-        if (appliance.isPresent()) {
-            session.setAppliance(appliance.get());
-        } else {
+        if (!appliance.isPresent()) {
             throw new IllegalArgumentException("Appliance not found with id: " + applianceId);
         }
+
+        Session session = new Session();
+        session.setSessionDate(sessionDTO.getSessionDate());
+        session.setStatus(sessionDTO.getStatus());
+        session.setNotes(sessionDTO.getNotes());
+        session.setAppliance(appliance.get());
+
         return sessionRepository.save(session);
     }
 
