@@ -1,11 +1,12 @@
 package com.example.appliancemgmt.controller;
 
+import com.example.appliancemgmt.dto.ApiResponse;
 import com.example.appliancemgmt.dto.SignUpRequest;
 import com.example.appliancemgmt.entity.User;
 import com.example.appliancemgmt.service.UserService;
 import com.example.appliancemgmt.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -21,32 +22,28 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signUp(@RequestBody SignUpRequest signUpRequest) {
-        try {
-            User user = userService.signUp(signUpRequest);
-            return ResponseEntity.status(201).body("User created: " + user.getUsername());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ApiResponse<String> signUp(@RequestBody SignUpRequest signUpRequest) {
+        User user = userService.signUp(signUpRequest);
+        return new ApiResponse<>(HttpStatus.CREATED.value(), "User created successfully", user.getUsername());
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+    public ApiResponse<String> login(@RequestBody LoginRequest loginRequest) {
         Optional<User> userOptional = userService.getUserByUsername(loginRequest.getUsername());
         if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid username");
+            throw new IllegalArgumentException("Invalid username");
         }
         User user = userOptional.get();
         if (!user.getPassword().equals(loginRequest.getPassword())) {
-            return ResponseEntity.badRequest().body("Invalid password");
+            throw new IllegalArgumentException("Invalid password");
         }
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-        return ResponseEntity.ok(token);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Login successful", token);
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.OPTIONS)
-    public ResponseEntity<Void> handleOptions() {
-        return ResponseEntity.ok().build();
+    public ApiResponse<Void> handleOptions() {
+        return new ApiResponse<>(HttpStatus.OK.value(), "OPTIONS request handled", null);
     }
 }
 

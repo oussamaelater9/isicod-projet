@@ -1,7 +1,7 @@
 package com.example.appliancemgmt.service;
 
 import com.example.appliancemgmt.dto.AddSessionDTO;
-import com.example.appliancemgmt.dto.SessionsResponseDTO;
+import com.example.appliancemgmt.dto.SessionResponseDTO;
 import com.example.appliancemgmt.entity.Appliance;
 import com.example.appliancemgmt.entity.Session;
 import com.example.appliancemgmt.entity.SessionStatus;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,13 +25,13 @@ public class SessionService {
     @Autowired
     private ApplianceRepository applianceRepository;
 
-    public List<SessionsResponseDTO> findAll() {
+    public List<SessionResponseDTO> findAll() {
         return sessionRepository.findAll().stream()
-                .map(session -> new SessionsResponseDTO(
+                .map(session -> new SessionResponseDTO(
                         session.getId(),
-                        session.getApplianceId(),
-                        session.getStatus(),
-                        session.getStartTime(),
+                        session.getAppliance() != null ? session.getAppliance().getId() : null,
+                        session.getStatus() != null ? session.getStatus().name() : null,
+                        session.getSessionDate() != null ? session.getSessionDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "Z" : null,
                         session.getNotes()
                 ))
                 .collect(Collectors.toList());

@@ -1,11 +1,13 @@
 package com.example.appliancemgmt.controller;
 
 import com.example.appliancemgmt.dto.AddSessionDTO;
+import com.example.appliancemgmt.dto.ApiResponse;
+import com.example.appliancemgmt.dto.SessionResponseDTO;
 import com.example.appliancemgmt.entity.Session;
 import com.example.appliancemgmt.entity.SessionStatus;
 import com.example.appliancemgmt.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,58 +19,46 @@ public class SessionController {
     private SessionService sessionService;
 
     @GetMapping
-    public ResponseEntity<List<Session>> getAllSessions() {
-        List<Session> sessions = sessionService.getAllSessions();
-        return ResponseEntity.ok(sessions);
+    public ApiResponse<List<SessionResponseDTO>> getSessions() {
+        List<SessionResponseDTO> sessions = sessionService.findAll();
+        return new ApiResponse<>(HttpStatus.OK.value(), "Sessions retrieved successfully", sessions);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Session> getSessionById(@PathVariable Long id) {
-        return sessionService.getSessionById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ApiResponse<Session> getSessionById(@PathVariable Long id) {
+        Session session = sessionService.getSessionById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Session not found with id: " + id));
+        return new ApiResponse<>(HttpStatus.OK.value(), "Session retrieved successfully", session);
     }
 
     @GetMapping("/appliance/{applianceId}")
-    public ResponseEntity<List<Session>> getSessionsByApplianceId(@PathVariable Long applianceId) {
+    public ApiResponse<List<Session>> getSessionsByApplianceId(@PathVariable Long applianceId) {
         List<Session> sessions = sessionService.getSessionsByApplianceId(applianceId);
-        return ResponseEntity.ok(sessions);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Sessions retrieved successfully", sessions);
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<Session>> getSessionsByStatus(@PathVariable SessionStatus status) {
+    public ApiResponse<List<Session>> getSessionsByStatus(@PathVariable SessionStatus status) {
         List<Session> sessions = sessionService.getSessionsByStatus(status);
-        return ResponseEntity.ok(sessions);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Sessions retrieved successfully", sessions);
     }
 
     @PostMapping
-    public ResponseEntity<Session> createSession(@RequestBody AddSessionDTO sessionDTO, @RequestParam Long applianceId) {
-        try {
-            Session createdSession = sessionService.createSession(sessionDTO, applianceId);
-            return ResponseEntity.status(201).body(createdSession);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+    public ApiResponse<Session> createSession(@RequestBody AddSessionDTO sessionDTO, @RequestParam Long applianceId) {
+        Session createdSession = sessionService.createSession(sessionDTO, applianceId);
+        return new ApiResponse<>(HttpStatus.CREATED.value(), "Session created successfully", createdSession);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Session> updateSession(@PathVariable Long id, @RequestBody Session session,
-                                                 @RequestParam(required = false) Long applianceId) {
-        try {
-            Session updatedSession = sessionService.updateSession(id, session, applianceId);
-            return ResponseEntity.ok(updatedSession);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+    public ApiResponse<Session> updateSession(@PathVariable Long id, @RequestBody Session session,
+                                              @RequestParam(required = false) Long applianceId) {
+        Session updatedSession = sessionService.updateSession(id, session, applianceId);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Session updated successfully", updatedSession);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSession(@PathVariable Long id) {
-        try {
-            sessionService.deleteSession(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ApiResponse<Void> deleteSession(@PathVariable Long id) {
+        sessionService.deleteSession(id);
+        return new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "Session deleted successfully", null);
     }
 }

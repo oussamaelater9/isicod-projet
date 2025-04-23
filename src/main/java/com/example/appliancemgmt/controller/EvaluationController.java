@@ -1,11 +1,10 @@
 package com.example.appliancemgmt.controller;
 
 import com.example.appliancemgmt.dto.AddEvaluationDTO;
+import com.example.appliancemgmt.dto.ApiResponse;
 import com.example.appliancemgmt.dto.EvaluationResponseDTO;
-import com.example.appliancemgmt.entity.Evaluation;
 import com.example.appliancemgmt.service.EvaluationService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,68 +12,46 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/evaluations")
 public class EvaluationController {
+    private final EvaluationService evaluationService;
 
-    @Autowired
-    private EvaluationService evaluationService;
+    public EvaluationController(EvaluationService evaluationService) {
+        this.evaluationService = evaluationService;
+    }
 
     @GetMapping
-    public ResponseEntity<List<EvaluationResponseDTO>> getAllEvaluations() {
-        List<EvaluationResponseDTO> evaluations = evaluationService.getAllEvaluations();
-        return ResponseEntity.ok(evaluations);
+    public ApiResponse<List<EvaluationResponseDTO>> getEvaluations() {
+        List<EvaluationResponseDTO> evaluations = evaluationService.findAll();
+        return new ApiResponse<>(HttpStatus.OK.value(), "Evaluations retrieved successfully", evaluations);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EvaluationResponseDTO> getEvaluationById(@PathVariable Long id) {
-        return evaluationService.getEvaluationById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ApiResponse<EvaluationResponseDTO> getEvaluation(@PathVariable Long id) {
+        EvaluationResponseDTO evaluation = evaluationService.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Evaluation not found with id: " + id));
+        return new ApiResponse<>(HttpStatus.OK.value(), "Evaluation retrieved successfully", evaluation);
     }
 
     @GetMapping("/appliance/{applianceId}")
-    public ResponseEntity<List<EvaluationResponseDTO>> getEvaluationsByApplianceId(@PathVariable Long applianceId) {
-        List<EvaluationResponseDTO> evaluations = evaluationService.getEvaluationsByApplianceId(applianceId);
-        return ResponseEntity.ok(evaluations);
-    }
-
-    @GetMapping("/client/{clientId}")
-    public ResponseEntity<List<EvaluationResponseDTO>> getEvaluationsByClientId(@PathVariable Long clientId) {
-        List<EvaluationResponseDTO> evaluations = evaluationService.getEvaluationsByClientId(clientId);
-        return ResponseEntity.ok(evaluations);
-    }
-
-    @GetMapping("/outcome/{outcome}")
-    public ResponseEntity<List<EvaluationResponseDTO>> getEvaluationsByOutcome(@PathVariable String outcome) {
-        List<EvaluationResponseDTO> evaluations = evaluationService.getEvaluationsByOutcome(outcome);
-        return ResponseEntity.ok(evaluations);
+    public ApiResponse<List<EvaluationResponseDTO>> getEvaluationsByAppliance(@PathVariable Long applianceId) {
+        List<EvaluationResponseDTO> evaluations = evaluationService.findByApplianceId(applianceId);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Evaluations for appliance retrieved successfully", evaluations);
     }
 
     @PostMapping
-    public ResponseEntity<Evaluation> createEvaluation(@RequestBody AddEvaluationDTO dto) {
-        try {
-            Evaluation evaluation = evaluationService.addEvaluation(dto);
-            return ResponseEntity.status(201).body(evaluation);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+    public ApiResponse<EvaluationResponseDTO> addEvaluation(@RequestBody AddEvaluationDTO dto) {
+        EvaluationResponseDTO evaluation = evaluationService.save(dto);
+        return new ApiResponse<>(HttpStatus.CREATED.value(), "Evaluation added successfully", evaluation);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Evaluation> updateEvaluation(@PathVariable Long id, @RequestBody AddEvaluationDTO dto) {
-        try {
-            Evaluation updatedEvaluation = evaluationService.updateEvaluation(id, dto);
-            return ResponseEntity.ok(updatedEvaluation);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+    public ApiResponse<EvaluationResponseDTO> updateEvaluation(@PathVariable Long id, @RequestBody AddEvaluationDTO dto) {
+        EvaluationResponseDTO evaluation = evaluationService.update(id, dto);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Evaluation updated successfully", evaluation);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEvaluation(@PathVariable Long id) {
-        try {
-            evaluationService.deleteEvaluation(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ApiResponse<Void> deleteEvaluation(@PathVariable Long id) {
+        evaluationService.delete(id);
+        return new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "Evaluation deleted successfully", null);
     }
 }

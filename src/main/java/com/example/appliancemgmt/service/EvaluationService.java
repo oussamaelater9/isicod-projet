@@ -4,97 +4,90 @@ import com.example.appliancemgmt.dto.AddEvaluationDTO;
 import com.example.appliancemgmt.dto.EvaluationResponseDTO;
 import com.example.appliancemgmt.entity.Appliance;
 import com.example.appliancemgmt.entity.Evaluation;
+import com.example.appliancemgmt.entity.EvaluationOutcome;
 import com.example.appliancemgmt.repository.ApplianceRepository;
 import com.example.appliancemgmt.repository.EvaluationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class EvaluationService {
+    private final EvaluationRepository evaluationRepository;
+    private final ApplianceRepository applianceRepository;
 
-    @Autowired
-    private EvaluationRepository evaluationRepository;
+    public EvaluationService(EvaluationRepository evaluationRepository, ApplianceRepository applianceRepository) {
+        this.evaluationRepository = evaluationRepository;
+        this.applianceRepository = applianceRepository;
+    }
 
-    @Autowired
-    private ApplianceRepository applianceRepository;
+    public List<EvaluationResponseDTO> findAll() {
+        return evaluationRepository.findAll().stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
 
-    public Evaluation addEvaluation(AddEvaluationDTO dto) {
+    public Optional<EvaluationResponseDTO> findById(Long id) {
+        return evaluationRepository.findById(id).map(this::mapToDTO);
+    }
+
+    public List<EvaluationResponseDTO> findByApplianceId(Long applianceId) {
+        return evaluationRepository.findByApplianceId(applianceId).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public EvaluationResponseDTO save(AddEvaluationDTO dto) {
         Appliance appliance = applianceRepository.findById(dto.getApplianceId())
-                .orElseThrow(() -> new IllegalArgumentException("Appliance not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Appliance not found with id: " + dto.getApplianceId()));
 
         Evaluation evaluation = new Evaluation();
         evaluation.setMeetingDate(dto.getMeetingDate());
-        evaluation.setOutcome(dto.getOutcome());
+        evaluation.setOutcome(EvaluationOutcome.valueOf(dto.getOutcome()));
         evaluation.setNotes(dto.getNotes());
         evaluation.setAppliance(appliance);
 
-        return evaluationRepository.save(evaluation);
+        Evaluation saved = evaluationRepository.save(evaluation);
+        return mapToDTO(saved);
     }
 
-    public List<EvaluationResponseDTO> getAllEvaluations() {
-        return evaluationRepository.findAll().stream()
-                .map(this::toResponseDTO)
-                .toList();
+    public EvaluationResponseDTO update(Long id, AddEvaluationDTO dto) {
+        return evaluationRepository.findById(id)
+                .map(existing -> {
+                    Appliance appliance = applianceRepository.findById(dto.getApplianceId())
+                            .orElseThrow(() -> new IllegalArgumentException("Appliance not found with id: " + dto.getApplianceId()));
+                    existing.setMeetingDate(dto.getMeetingDate());
+                    existing.setOutcome(EvaluationOutcome.valueOf(dto.getOutcome()));
+                    existing.setNotes(dto.getNotes());
+                    existing.setAppliance(appliance);
+                    return mapToDTO(evaluationRepository.save(existing));
+                })
+                .orElseThrow(() -> new IllegalArgumentException("Evaluation not found with id: " + id));
     }
 
-    public Optional<EvaluationResponseDTO> getEvaluationById(Long id) {
-        return evaluationRepository.findById(id).map(this::toResponseDTO);
-    }
-
-    public List<EvaluationResponseDTO> getEvaluationsByApplianceId(Long applianceId) {
-        return evaluationRepository.findByApplianceId(applianceId).stream()
-                .map(this::toResponseDTO)
-                .toList();
-    }
-
-    public List<EvaluationResponseDTO> getEvaluationsByClientId(Long clientId) {
-        return evaluationRepository.findByApplianceClientId(clientId).stream()
-                .map(this::toResponseDTO)
-                .toList();
-    }
-
-    public List<EvaluationResponseDTO> getEvaluationsByOutcome(String outcome) {
-        return evaluationRepository.findByOutcome(outcome).stream()
-                .map(this::toResponseDTO)
-                .toList();
-    }
-
-    public Evaluation updateEvaluation(Long id, AddEvaluationDTO dto) {
-        Evaluation evaluation = evaluationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Evaluation not found"));
-
-        Appliance appliance = applianceRepository.findById(dto.getApplianceId())
-                .orElseThrow(() -> new IllegalArgumentException("Appliance not found"));
-
-        evaluation.setMeetingDate(dto.getMeetingDate());
-        evaluation.setOutcome(dto.getOutcome());
-        evaluation.setNotes(dto.getNotes());
-        evaluation.setAppliance(appliance);
-
-        return evaluationRepository.save(evaluation);
-    }
-
-    public void deleteEvaluation(Long id) {
+    public void delete(Long id) {
         if (!evaluationRepository.existsById(id)) {
-            throw new IllegalArgumentException("Evaluation not found");
+            throw new IllegalArgumentException("Evaluation not found with id: " + id);
         }
         evaluationRepository.deleteById(id);
     }
 
-    private EvaluationResponseDTO toResponseDTO(Evaluation evaluation) {
+    private EvaluationResponseDTO mapToDTO(Evaluation evaluation) {
+        EvaluationResponseDTO.ApplianceSummaryDTO applianceDTO = new EvaluationResponseDTO.ApplianceSummaryDTO();
+        applianceDTO.setId(evaluation.getAppliance().getId());
+        applianceDTO.setName(evaluation.getAppliance().getName());
+
         EvaluationResponseDTO dto = new EvaluationResponseDTO();
         dto.setId(evaluation.getId());
         dto.setMeetingDate(evaluation.getMeetingDate());
-        dto.setOutcome(evaluation.getOutcome());
+        dto.setOutcome(evaluation.getOutcome() != null ? evaluation.getOutcome().name() : null);
         dto.setNotes(evaluation.getNotes());
         dto.setCreatedAt(evaluation.getCreatedAt());
-        EvaluationResponseDTO.ApplianceSummaryDTO applianceDto = new EvaluationResponseDTO.ApplianceSummaryDTO();
-        applianceDto.setId(evaluation.getAppliance().getId());
-        applianceDto.setName(evaluation.getAppliance().getName());
-        dto.setAppliance(applianceDto);
+        dto.setAppliance(applianceDTO);
         return dto;
     }
 }

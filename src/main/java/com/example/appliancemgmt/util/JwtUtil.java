@@ -19,9 +19,6 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration}")
-    private Long expiration;
-
     // Generate token for a user
     public String generateToken(String username, User.Role role) {
         Map<String, Object> claims = new HashMap<>();
@@ -30,6 +27,7 @@ public class JwtUtil {
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
+        long expiration = 3600;
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)

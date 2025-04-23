@@ -1,10 +1,11 @@
 package com.example.appliancemgmt.controller;
 
 import com.example.appliancemgmt.dto.AddClientDTO;
+import com.example.appliancemgmt.dto.ApiResponse;
 import com.example.appliancemgmt.entity.Client;
 import com.example.appliancemgmt.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,58 +17,46 @@ public class ClientController {
     private ClientService clientService;
 
     @GetMapping
-    public ResponseEntity<List<Client>> getAllClients() {
+    public ApiResponse<List<Client>> getAllClients() {
         List<Client> clients = clientService.getAllClients();
-        return ResponseEntity.ok(clients);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Clients retrieved successfully", clients);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Client> getClientById(@PathVariable Long id) {
-        return clientService.getClientById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ApiResponse<Client> getClientById(@PathVariable Long id) {
+        Client client = clientService.getClientById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Client not found with id: " + id));
+        return new ApiResponse<>(HttpStatus.OK.value(), "Client retrieved successfully", client);
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<Client> getClientByEmail(@PathVariable String email) {
-        return clientService.getClientByEmail(email)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ApiResponse<Client> getClientByEmail(@PathVariable String email) {
+        Client client = clientService.getClientByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Client not found with email: " + email));
+        return new ApiResponse<>(HttpStatus.OK.value(), "Client retrieved successfully", client);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Client>> searchClientsByName(@RequestParam String name) {
+    public ApiResponse<List<Client>> searchClientsByName(@RequestParam String name) {
         List<Client> clients = clientService.searchClientsByName(name);
-        return ResponseEntity.ok(clients);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Clients retrieved successfully", clients);
     }
 
     @PostMapping("/addClient/{id}")
-    public ResponseEntity<Client> createClient(@RequestBody AddClientDTO client ,@PathVariable Long id) {
-        try {
-            Client createdClient = clientService.createClient(client,id);
-            return ResponseEntity.status(201).body(createdClient);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+    public ApiResponse<Client> createClient(@RequestBody AddClientDTO client, @PathVariable Long id) {
+        Client createdClient = clientService.createClient(client, id);
+        return new ApiResponse<>(HttpStatus.CREATED.value(), "Client created successfully", createdClient);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Client> updateClient(@PathVariable Long id, @RequestBody Client client) {
-        try {
-            Client updatedClient = clientService.updateClient(id, client);
-            return ResponseEntity.ok(updatedClient);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+    public ApiResponse<Client> updateClient(@PathVariable Long id, @RequestBody Client client) {
+        Client updatedClient = clientService.updateClient(id, client);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Client updated successfully", updatedClient);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
-        try {
-            clientService.deleteClient(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ApiResponse<Void> deleteClient(@PathVariable Long id) {
+        clientService.deleteClient(id);
+        return new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "Client deleted successfully", null);
     }
 }

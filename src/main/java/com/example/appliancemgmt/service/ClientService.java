@@ -50,7 +50,7 @@ public class ClientService {
         Client newClient = new Client();
         if (user != null) {
 
-            newClient.setAddress(client.getAdress());
+
             newClient.setPhone(client.getPhone());
             newClient.setCompanyName(client.getCompanyName());
             newClient.setEmail(client.getEmail());

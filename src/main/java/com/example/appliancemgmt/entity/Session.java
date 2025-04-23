@@ -24,7 +24,7 @@ public class Session {
 
     @ManyToOne
     @JoinColumn(name = "appliance_id")
-    private Appliance appliance;
+    public Appliance appliance;
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -39,6 +39,7 @@ public class Session {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public Appliance getAppliance() { return appliance; }
     public void setAppliance(Appliance appliance) { this.appliance = appliance; }
+
 
 }
 

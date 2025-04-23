@@ -1,6 +1,6 @@
 package com.example.appliancemgmt.dto;
 
-public class SessionsResponseDTO {
+public class SessionResponseDTO {
     private Long id;
     private Long applianceId;
     private String status;
@@ -8,9 +8,9 @@ public class SessionsResponseDTO {
     private String notes;
 
     // Constructors
-    public SessionsResponseDTO() {}
+    public SessionResponseDTO() {}
 
-    public SessionsResponseDTO(Long id, Long applianceId, String status, String startTime, String notes) {
+    public SessionResponseDTO(Long id, Long applianceId, String status, String startTime, String notes) {
         this.id = id;
         this.applianceId = applianceId;
         this.status = status;
