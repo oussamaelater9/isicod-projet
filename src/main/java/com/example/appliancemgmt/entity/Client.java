@@ -1,7 +1,8 @@
 package com.example.appliancemgmt.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "clients")
@@ -16,14 +17,28 @@ public class Client {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(name = "company_name", nullable = false)
     private String companyName;
+
     private String phone;
     private String industry;
     private String address;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+            System.out.println("Setting createdAt to: " + this.createdAt); // Debug log
+        }
+    }
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -42,4 +57,6 @@ public class Client {
     public void setAddress(String address) { this.address = address; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

@@ -34,8 +34,6 @@ public class UserService {
         user.setEmail(signUpRequest.getEmail());
         user.setPhone(signUpRequest.getPhone());
         user.setName(signUpRequest.getName());
-
-
         user.setRole(Role.CONSULTANT);
 
         return userRepository.save(user);

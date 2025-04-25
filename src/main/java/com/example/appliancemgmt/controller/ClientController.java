@@ -42,9 +42,9 @@ public class ClientController {
         return new ApiResponse<>(HttpStatus.OK.value(), "Clients retrieved successfully", clients);
     }
 
-    @PostMapping("/addClient/{id}")
-    public ApiResponse<Client> createClient(@RequestBody AddClientDTO client, @PathVariable Long id) {
-        Client createdClient = clientService.createClient(client, id);
+    @PostMapping
+    public ApiResponse<Client> createClient(@RequestBody AddClientDTO client, @RequestParam Long userId) {
+        Client createdClient = clientService.createClient(client, userId);
         return new ApiResponse<>(HttpStatus.CREATED.value(), "Client created successfully", createdClient);
     }
 
