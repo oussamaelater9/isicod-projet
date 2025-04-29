@@ -6,6 +6,7 @@ import com.example.appliancemgmt.dto.SessionResponseDTO;
 import com.example.appliancemgmt.entity.Session;
 import com.example.appliancemgmt.entity.SessionStatus;
 import com.example.appliancemgmt.service.SessionService;
+import com.example.appliancemgmt.service.LogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,9 @@ import java.util.List;
 public class SessionController {
     @Autowired
     private SessionService sessionService;
+
+    @Autowired
+    private LogService logService;
 
     @GetMapping
     public ApiResponse<List<SessionResponseDTO>> getSessions() {
@@ -46,6 +50,7 @@ public class SessionController {
     @PostMapping
     public ApiResponse<Session> createSession(@RequestBody AddSessionDTO sessionDTO, @RequestParam Long applianceId) {
         Session createdSession = sessionService.createSession(sessionDTO, applianceId);
+        logService.logAction("CREATE", "Session", "Created session with ID: " + createdSession.getId() + " for appliance ID: " + applianceId);
         return new ApiResponse<>(HttpStatus.CREATED.value(), "Session created successfully", createdSession);
     }
 
@@ -53,12 +58,14 @@ public class SessionController {
     public ApiResponse<Session> updateSession(@PathVariable Long id, @RequestBody Session session,
                                               @RequestParam(required = false) Long applianceId) {
         Session updatedSession = sessionService.updateSession(id, session, applianceId);
+        logService.logAction("UPDATE", "Session", "Updated session with ID: " + id);
         return new ApiResponse<>(HttpStatus.OK.value(), "Session updated successfully", updatedSession);
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteSession(@PathVariable Long id) {
         sessionService.deleteSession(id);
+        logService.logAction("DELETE", "Session", "Deleted session with ID: " + id);
         return new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "Session deleted successfully", null);
     }
 }

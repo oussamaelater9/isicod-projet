@@ -1,9 +1,15 @@
 package com.example.appliancemgmt.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class SignUpRequest {
 
+    @NotBlank(message = "Username is required")
     private String username;
+
+    @NotBlank(message = "Password is required")
     private String password;
+
     private String name;
     private String email;
     private String phone;

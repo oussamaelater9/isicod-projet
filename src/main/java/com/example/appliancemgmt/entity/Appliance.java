@@ -18,7 +18,7 @@ public class Appliance {
     private Status status;
 
     @Column
-        private LocalDate testStartDate;
+    private LocalDate testStartDate;
 
     @Column
     private LocalDate testEndDate;

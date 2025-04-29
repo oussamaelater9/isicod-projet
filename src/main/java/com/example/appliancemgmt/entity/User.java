@@ -13,46 +13,17 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String email;
-    @Column(nullable = false)
+
+    @Column
     private String phone;
-    @Column(nullable = false)
+
+    @Column
     private String address;
-    @Column(nullable = false)
+
+    @Column
     private String name;
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -64,16 +35,28 @@ public class User {
     @Column(nullable = false)
     private Role role = Role.CONSULTANT;
 
-    @Column
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonManagedReference(value = "user-clients")
     private List<Client> clients = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "user-logs")
+    private List<Log> logs = new ArrayList<>();
 
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
     public String getPassword() { return password; }
@@ -84,6 +67,8 @@ public class User {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public List<Client> getClients() { return clients; }
     public void setClients(List<Client> clients) { this.clients = clients; }
+    public List<Log> getLogs() { return logs; }
+    public void setLogs(List<Log> logs) { this.logs = logs; }
 
     public enum Role {
         ADMIN, CONSULTANT
