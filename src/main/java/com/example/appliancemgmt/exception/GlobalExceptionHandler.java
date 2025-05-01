@@ -3,6 +3,7 @@ package com.example.appliancemgmt.exception;
 import com.example.appliancemgmt.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -36,6 +37,13 @@ public class GlobalExceptionHandler {
     public ApiResponse<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         String message = "Invalid request body: " + ex.getMessage();
         return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), message, null);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseBody
+    public ApiResponse<Void> handleAccessDeniedException(AccessDeniedException ex) {
+        return new ApiResponse<>(HttpStatus.FORBIDDEN.value(), "Access denied: Invalid or expired token", null);
     }
 
     @ExceptionHandler(Exception.class)
