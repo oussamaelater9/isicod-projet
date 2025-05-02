@@ -154,8 +154,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-        User updatedUser = userService.updateUser(id, user);
+    public ApiResponse<User> updateUser(@PathVariable Long id, @RequestBody UserDTO user) {
+          User updatedUser = userService.updateUser(id, user);
         logService.logAction("UPDATE", "User", "Updated user with ID: " + id);
         return new ApiResponse<>(HttpStatus.OK.value(), "User updated successfully", updatedUser);
     }

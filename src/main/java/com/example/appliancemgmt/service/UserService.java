@@ -1,6 +1,7 @@
 package com.example.appliancemgmt.service;
 
 import com.example.appliancemgmt.dto.SignUpRequest;
+import com.example.appliancemgmt.dto.UserDTO;
 import com.example.appliancemgmt.entity.Client;
 import com.example.appliancemgmt.entity.User;
 import com.example.appliancemgmt.entity.User.Role;
@@ -103,7 +104,7 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public User updateUser(Long id, User user) {
+    public User updateUser(Long id, UserDTO user) {
         Optional<User> existingUserOpt = userRepository.findById(id);
         if (!existingUserOpt.isPresent()) {
             logger.warn("User with id {} not found", id);
@@ -119,12 +120,12 @@ public class UserService {
             }
             existingUser.setUsername(user.getUsername());
         }
-        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-            existingUser.setPassword(passwordEncoder.encode(user.getPassword())); // Hash with bcrypt
-        }
-        if (user.getRole() != null) {
-            existingUser.setRole(user.getRole());
-        }
+//        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+//            existingUser.setPassword(passwordEncoder.encode(user.getPassword())); // Hash with bcrypt
+//        }
+//        if (user.getRole() != null) {
+//            existingUser.setRole(user.getRole());
+//        }
         if (user.getName() != null) {
             existingUser.setName(user.getName());
         }

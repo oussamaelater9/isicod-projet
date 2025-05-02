@@ -55,7 +55,9 @@ public class ClientService {
             newClient.setCompanyName(client.getCompanyName());
             newClient.setEmail(client.getEmail());
             newClient.setName(client.getName());
+            newClient.setIndustry(client.getIndustry());
             newClient.setUser(user);
+
 
         }
 
