@@ -53,4 +53,10 @@ public class ApplianceService {
                 })
                 .toList();
     }
+
+    public void deleteAppliance(Long id) {
+        Appliance appliance = applianceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Appliance not found"));
+        applianceRepository.delete(appliance);
+    }
 }

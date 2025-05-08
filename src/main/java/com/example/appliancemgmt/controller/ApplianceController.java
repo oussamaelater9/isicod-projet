@@ -57,4 +57,18 @@ public class ApplianceController {
             return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to fetch appliances: " + e.getMessage(), null);
         }
     }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteAppliance(@PathVariable Long id) {
+        try {
+            applianceService.deleteAppliance(id);
+            return new ApiResponse<>(HttpStatus.OK.value(), "Appliance deleted successfully", null);
+        } catch (IllegalArgumentException e) {
+            logger.error("Appliance deletion failed: {}", e.getMessage());
+            return new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+        } catch (Exception e) {
+            logger.error("Unexpected error during deletion: {}", e.getMessage(), e);
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to delete appliance: " + e.getMessage(), null);
+        }
+    }
 }
