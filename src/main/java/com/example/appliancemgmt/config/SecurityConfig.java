@@ -36,6 +36,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "SUPERADMIN") // Restrict user endpoints
+                        .requestMatchers("/api/roles/**").hasRole("SUPERADMIN")
 
                         .anyRequest().authenticated()
                 )

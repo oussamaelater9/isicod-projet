@@ -71,6 +71,6 @@ public class User {
     public void setLogs(List<Log> logs) { this.logs = logs; }
 
     public enum Role {
-        ADMIN, CONSULTANT
+        ADMIN, CONSULTANT, SUPERADMIN
     }
 }

@@ -20,8 +20,10 @@ public class LogController {
     public Page<LogResponseDTO> getLogs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "timestamp") String sort,
-            @RequestParam(defaultValue = "desc") String direction) {
-        return logService.getLogs(page, size, sort, direction);
+            @RequestParam(defaultValue = "timestamp,desc") String sort) {
+        String[] sortParams = sort.split(",");
+        String sortField = sortParams[0];
+        String sortDirection = sortParams.length > 1 ? sortParams[1] : "desc";
+        return logService.getLogs(page, size, sortField, sortDirection);
     }
 }

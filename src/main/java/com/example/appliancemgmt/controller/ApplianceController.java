@@ -32,6 +32,7 @@ public class ApplianceController {
             responseDTO.setStatus(appliance.getStatus().name());
             responseDTO.setTestStartDate(appliance.getTestStartDate());
             responseDTO.setTestEndDate(appliance.getTestEndDate());
+            responseDTO.setCreatedAt(appliance.getCreatedAt());
             ApplianceResponseDTO.ClientSummaryDTO clientDto = new ApplianceResponseDTO.ClientSummaryDTO();
             clientDto.setId(appliance.getClient().getId());
             clientDto.setCompanyName(appliance.getClient().getCompanyName());
@@ -69,6 +70,32 @@ public class ApplianceController {
         } catch (Exception e) {
             logger.error("Unexpected error during deletion: {}", e.getMessage(), e);
             return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to delete appliance: " + e.getMessage(), null);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<ApplianceResponseDTO> updateAppliance(@PathVariable Long id, @Valid @RequestBody AddApplianceDTO dto) {
+        try {
+            Appliance appliance = applianceService.updateAppliance(id, dto);
+            ApplianceResponseDTO responseDTO = new ApplianceResponseDTO();
+            responseDTO.setId(appliance.getId());
+            responseDTO.setName(appliance.getName());
+            responseDTO.setStatus(appliance.getStatus().name());
+            responseDTO.setTestStartDate(appliance.getTestStartDate());
+            responseDTO.setTestEndDate(appliance.getTestEndDate());
+            responseDTO.setCreatedAt(appliance.getCreatedAt());
+            ApplianceResponseDTO.ClientSummaryDTO clientDto = new ApplianceResponseDTO.ClientSummaryDTO();
+            clientDto.setId(appliance.getClient().getId());
+            clientDto.setCompanyName(appliance.getClient().getCompanyName());
+            clientDto.setName(appliance.getClient().getName());
+            responseDTO.setClient(clientDto);
+            return new ApiResponse<>(HttpStatus.OK.value(), "Appliance updated successfully", responseDTO);
+        } catch (IllegalArgumentException e) {
+            logger.error("Appliance update failed: {}", e.getMessage());
+            return new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+        } catch (Exception e) {
+            logger.error("Unexpected error during update: {}", e.getMessage(), e);
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to update appliance: " + e.getMessage(), null);
         }
     }
 }

@@ -154,10 +154,23 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<User> updateUser(@PathVariable Long id, @RequestBody UserDTO user) {
-          User updatedUser = userService.updateUser(id, user);
+    public ApiResponse<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+        User updatedUser = userService.updateUser(id, userDTO);
+        UserDTO updatedUserDTO = new UserDTO(
+                updatedUser.getId(),
+                updatedUser.getUsername(),
+                updatedUser.getName(),
+                updatedUser.getEmail(),
+                updatedUser.getPhone(),
+                updatedUser.getAddress(),
+                updatedUser.getRole().name(),
+                updatedUser.getCreatedAt().toString(),
+                updatedUser.getClients().stream()
+                        .map(client -> new ClientResponseDTO(client.getId(), client.getName()))
+                        .collect(Collectors.toList())
+        );
         logService.logAction("UPDATE", "User", "Updated user with ID: " + id);
-        return new ApiResponse<>(HttpStatus.OK.value(), "User updated successfully", updatedUser);
+        return new ApiResponse<>(HttpStatus.OK.value(), "User updated successfully", updatedUserDTO);
     }
 
     @DeleteMapping("/{id}")

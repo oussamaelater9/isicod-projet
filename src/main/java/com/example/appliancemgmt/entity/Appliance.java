@@ -30,7 +30,7 @@ public class Appliance {
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 
-    public enum Status { ACTIVE, INACTIVE, REPAIRED }
+    public enum Status { ACTIVE, INACTIVE, COMPLETED }
 
     // Getters and Setters
     public Long getId() { return id; }

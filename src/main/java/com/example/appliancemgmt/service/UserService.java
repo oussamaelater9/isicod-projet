@@ -10,7 +10,7 @@ import com.example.appliancemgmt.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,8 +26,6 @@ public class UserService {
 
     @Autowired
     private ClientRepository clientRepository;
-
-
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -51,7 +49,7 @@ public class UserService {
         try {
             User user = new User();
             user.setUsername(signUpRequest.getUsername());
-            user.setPassword(passwordEncoder.encode(signUpRequest.getPassword())); // Hash with bcrypt
+            user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
             user.setAddress(signUpRequest.getAddress());
             user.setEmail(signUpRequest.getEmail());
             user.setPhone(signUpRequest.getPhone());
@@ -80,7 +78,13 @@ public class UserService {
             if (user.getRole() == null) {
                 user.setRole(Role.CONSULTANT);
             }
-            user.setPassword(passwordEncoder.encode(user.getPassword())); // Hash with bcrypt
+            // Only SUPERADMIN can create SUPERADMIN users
+            String currentUserRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                    .findFirst().map(auth -> auth.getAuthority().replace("ROLE_", "")).orElse("");
+            if (user.getRole() == Role.SUPERADMIN && !currentUserRole.equals("SUPERADMIN")) {
+                throw new IllegalArgumentException("Only SuperAdmin can create SuperAdmin users");
+            }
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             return userRepository.save(user);
         } catch (Exception e) {
             logger.error("Error saving user: {}", e.getMessage(), e);
@@ -104,7 +108,7 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public User updateUser(Long id, UserDTO user) {
+    public User updateUser(Long id, UserDTO userDTO) {
         Optional<User> existingUserOpt = userRepository.findById(id);
         if (!existingUserOpt.isPresent()) {
             logger.warn("User with id {} not found", id);
@@ -112,31 +116,36 @@ public class UserService {
         }
 
         User existingUser = existingUserOpt.get();
-        if (user.getUsername() != null && !user.getUsername().isEmpty()) {
-            Optional<User> usernameCheck = userRepository.findByUsername(user.getUsername());
+        String currentUserRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .findFirst().map(auth -> auth.getAuthority().replace("ROLE_", "")).orElse("");
+
+        // Only SUPERADMIN can change roles
+        if (userDTO.getRole() != null && !currentUserRole.equals("SUPERADMIN")) {
+            throw new IllegalArgumentException("Only SuperAdmin can change user roles");
+        }
+
+        if (userDTO.getUsername() != null && !userDTO.getUsername().isEmpty()) {
+            Optional<User> usernameCheck = userRepository.findByUsername(userDTO.getUsername());
             if (usernameCheck.isPresent() && !usernameCheck.get().getId().equals(id)) {
-                logger.warn("Username {} already exists", user.getUsername());
+                logger.warn("Username {} already exists", userDTO.getUsername());
                 throw new IllegalArgumentException("Username already exists");
             }
-            existingUser.setUsername(user.getUsername());
+            existingUser.setUsername(userDTO.getUsername());
         }
-//        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-//            existingUser.setPassword(passwordEncoder.encode(user.getPassword())); // Hash with bcrypt
-//        }
-//        if (user.getRole() != null) {
-//            existingUser.setRole(user.getRole());
-//        }
-        if (user.getName() != null) {
-            existingUser.setName(user.getName());
+        if (userDTO.getName() != null) {
+            existingUser.setName(userDTO.getName());
         }
-        if (user.getEmail() != null) {
-            existingUser.setEmail(user.getEmail());
+        if (userDTO.getEmail() != null) {
+            existingUser.setEmail(userDTO.getEmail());
         }
-        if (user.getPhone() != null) {
-            existingUser.setPhone(user.getPhone());
+        if (userDTO.getPhone() != null) {
+            existingUser.setPhone(userDTO.getPhone());
         }
-        if (user.getAddress() != null) {
-            existingUser.setAddress(user.getAddress());
+        if (userDTO.getAddress() != null) {
+            existingUser.setAddress(userDTO.getAddress());
+        }
+        if (userDTO.getRole() != null && currentUserRole.equals("SUPERADMIN")) {
+            existingUser.setRole(Role.valueOf(userDTO.getRole()));
         }
         try {
             return userRepository.save(existingUser);
@@ -147,10 +156,46 @@ public class UserService {
     }
 
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (!userOpt.isPresent()) {
             logger.warn("User with id {} not found", id);
             throw new IllegalArgumentException("User with id " + id + " not found");
         }
+
+        User userToDelete = userOpt.get();
+        String currentUserRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .findFirst().map(auth -> auth.getAuthority().replace("ROLE_", "")).orElse("");
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // Super Admin can delete any user, including other Super Admins
+        if (currentUserRole.equals("SUPERADMIN")) {
+            try {
+                userRepository.deleteById(id);
+                return; // Exit after deletion
+            } catch (Exception e) {
+                logger.error("Error deleting user: {}", e.getMessage(), e);
+                throw new RuntimeException("Failed to delete user: " + e.getMessage());
+            }
+        }
+
+        // Prevent ADMIN from deleting other ADMINs or SUPERADMINs
+        if (currentUserRole.equals("ADMIN") &&
+                (userToDelete.getRole() == Role.ADMIN || userToDelete.getRole() == Role.SUPERADMIN)) {
+            throw new IllegalArgumentException("Admins cannot delete other Admins or Super Admins");
+        }
+
+        // Prevent CONSULTANT from deleting ADMINs or SUPERADMINs
+        if (currentUserRole.equals("CONSULTANT") &&
+                (userToDelete.getRole() == Role.ADMIN || userToDelete.getRole() == Role.SUPERADMIN)) {
+            throw new IllegalArgumentException("Consultants cannot delete Admins or Super Admins");
+        }
+
+        // Prevent self-deletion for non-Super Admins
+        Optional<User> currentUserOpt = userRepository.findByUsername(currentUsername);
+        if (currentUserOpt.isPresent() && currentUserOpt.get().getId().equals(id)) {
+            throw new IllegalArgumentException("Users cannot delete themselves");
+        }
+
         try {
             userRepository.deleteById(id);
         } catch (Exception e) {

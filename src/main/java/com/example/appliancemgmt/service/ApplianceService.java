@@ -20,6 +20,9 @@ public class ApplianceService {
     @Autowired
     private ClientRepository clientRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public Appliance addAppliance(AddApplianceDTO dto) {
         Client client = clientRepository.findById(dto.getClientId())
                 .orElseThrow(() -> new IllegalArgumentException("Client not found"));
@@ -30,6 +33,7 @@ public class ApplianceService {
         appliance.setTestStartDate(dto.getTestStartDate());
         appliance.setTestEndDate(dto.getTestEndDate());
         appliance.setClient(client);
+        notificationService.createNotification("New appliance added: " + appliance.getName());
 
         return applianceRepository.save(appliance);
     }
@@ -52,6 +56,19 @@ public class ApplianceService {
                     return dto;
                 })
                 .toList();
+    }
+
+    public Appliance updateAppliance(Long id, AddApplianceDTO dto) {
+        Appliance appliance = applianceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Appliance not found"));
+        Client client = clientRepository.findById(dto.getClientId())
+                .orElseThrow(() -> new IllegalArgumentException("Client not found"));
+        appliance.setName(dto.getName());
+        appliance.setStatus(dto.getStatus() != null ? Appliance.Status.valueOf(dto.getStatus()) : null);
+        appliance.setTestStartDate(dto.getTestStartDate());
+        appliance.setTestEndDate(dto.getTestEndDate());
+        appliance.setClient(client);
+        return applianceRepository.save(appliance);
     }
 
     public void deleteAppliance(Long id) {
