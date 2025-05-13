@@ -3,5 +3,5 @@ package com.example.appliancemgmt.repository;
 import com.example.appliancemgmt.entity.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface NotificationRepository extends JpaRepository<Notification, Long> {
+public interface NotificationRepository extends JpaRepository<Notification,Long> {
 }
