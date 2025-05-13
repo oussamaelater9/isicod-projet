@@ -32,9 +32,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
+                                "/api/users/username/**",
                                 "/v3/api-docs/**",
+                                "/api/users/**",
+                                "/api/notifications/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                "/ws/**"
                         ).permitAll()
                         .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "SUPERADMIN") // Restrict user endpoints
                         .requestMatchers("/api/roles/**").hasRole("SUPERADMIN")

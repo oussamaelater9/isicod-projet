@@ -7,6 +7,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,10 +18,13 @@ public class NotificationService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    public Notification createNotification(String message) {
+    public Notification createNotification(String message, Long senderId, Long clientId) {
         Notification notification = new Notification();
         notification.setMessage(message);
         notification.setCreatedAt(LocalDateTime.now());
+        notification.setSenderId(senderId);
+        notification.setClientId(clientId);
+        notification.setReadBy(new ArrayList<>());
         notification = notificationRepository.save(notification);
         messagingTemplate.convertAndSend("/topic/notifications", notification);
         return notification;
@@ -28,7 +32,16 @@ public class NotificationService {
 
     public List<Notification> getNotifications(Long userId) {
         return notificationRepository.findAll().stream()
-                .peek(n -> n.getReadBy().contains(userId))
+                .map(n -> {
+                    Notification notification = new Notification();
+                    notification.setId(n.getId());
+                    notification.setMessage(n.getMessage());
+                    notification.setCreatedAt(n.getCreatedAt());
+                    notification.setSenderId(n.getSenderId());
+                    notification.setClientId(n.getClientId());
+                    notification.setReadBy(n.getReadBy());
+                    return notification;
+                })
                 .toList();
     }
 
@@ -37,5 +50,13 @@ public class NotificationService {
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
         notification.getReadBy().add(userId);
         notificationRepository.save(notification);
+        messagingTemplate.convertAndSend("/topic/notifications", notification);
+    }
+
+    public void deleteNotification(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
+        notificationRepository.delete(notification);
+        messagingTemplate.convertAndSend("/topic/notifications", notification);
     }
 }
