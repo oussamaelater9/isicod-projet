@@ -120,9 +120,9 @@ public class UserService {
                 .findFirst().map(auth -> auth.getAuthority().replace("ROLE_", "")).orElse("");
 
         // Only SUPERADMIN can change roles
-        if (userDTO.getRole() != null && !currentUserRole.equals("SUPERADMIN")) {
-            throw new IllegalArgumentException("Only SuperAdmin can change user roles");
-        }
+//        if (userDTO.getRole() != null && !currentUserRole.equals("SUPERADMIN")) {
+//            throw new IllegalArgumentException("Only SuperAdmin can change user roles");
+//        }
 
         if (userDTO.getUsername() != null && !userDTO.getUsername().isEmpty()) {
             Optional<User> usernameCheck = userRepository.findByUsername(userDTO.getUsername());
