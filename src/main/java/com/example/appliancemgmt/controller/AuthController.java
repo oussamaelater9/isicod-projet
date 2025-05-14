@@ -7,6 +7,7 @@ import com.example.appliancemgmt.service.UserService;
 import com.example.appliancemgmt.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -20,6 +21,8 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/signup")
     public ApiResponse<String> signUp(@RequestBody SignUpRequest signUpRequest) {
@@ -30,16 +33,18 @@ public class AuthController {
     @PostMapping("/login")
     public ApiResponse<String> login(@RequestBody LoginRequest loginRequest) {
         Optional<User> userOptional = userService.getUserByUsername(loginRequest.getUsername());
-        if (userOptional.isEmpty()) {
-            throw new IllegalArgumentException("Invalid username");
+
+        if (userOptional.isEmpty() ||
+                !passwordEncoder.matches(loginRequest.getPassword(), userOptional.get().getPassword())) {
+            return new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Identifiants invalides", null);
         }
+
         User user = userOptional.get();
-        if (!user.getPassword().equals(loginRequest.getPassword())) {
-            throw new IllegalArgumentException("Invalid password");
-        }
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-        return new ApiResponse<>(HttpStatus.OK.value(), "Login successful", token);
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "Connexion réussie", token);
     }
+
 
     @RequestMapping(value = "/login", method = RequestMethod.OPTIONS)
     public ApiResponse<Void> handleOptions() {
