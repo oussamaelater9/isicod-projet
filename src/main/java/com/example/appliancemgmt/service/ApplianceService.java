@@ -107,9 +107,10 @@ public class ApplianceService {
         return applianceRepository.save(appliance);
     }
 
-    public void deleteAppliance(Long id) {
+    public Appliance deleteAppliance(Long id) {
         Appliance appliance = applianceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Appliance not found"));
         applianceRepository.delete(appliance);
+        return appliance;
     }
 }

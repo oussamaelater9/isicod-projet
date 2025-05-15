@@ -5,6 +5,7 @@ import com.example.appliancemgmt.dto.ApplianceResponseDTO;
 import com.example.appliancemgmt.dto.ApiResponse;
 import com.example.appliancemgmt.entity.Appliance;
 import com.example.appliancemgmt.service.ApplianceService;
+import com.example.appliancemgmt.service.LogService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,8 @@ public class ApplianceController {
 
     @Autowired
     private ApplianceService applianceService;
+    @Autowired
+    private LogService logService;
 
     @PostMapping
     public ApiResponse<ApplianceResponseDTO> addAppliance(@Valid @RequestBody AddApplianceDTO dto) {
@@ -38,6 +41,9 @@ public class ApplianceController {
             clientDto.setCompanyName(appliance.getClient().getCompanyName());
             clientDto.setName(appliance.getClient().getName());
             responseDTO.setClient(clientDto);
+
+            String details = String.format("Appliance '%s' created for client '%s'", appliance.getName(), appliance.getClient().getName());
+            logService.logAction("CREATE", "Appliance", details);
             return new ApiResponse<>(HttpStatus.CREATED.value(), "Appliance created successfully", responseDTO);
         } catch (IllegalArgumentException e) {
             logger.error("Appliance creation failed: {}", e.getMessage());
@@ -49,9 +55,12 @@ public class ApplianceController {
     }
 
     @GetMapping
-    public ApiResponse<List<ApplianceResponseDTO>> getAllAppliances() {
+    public ApiResponse<List<ApplianceResponseDTO>> getAllAppliances()
+    {
         try {
             List<ApplianceResponseDTO> appliances = applianceService.getAllAppliances();
+//            String details = String.format("Fetched %d appliances", appliances.size());
+//            logService.logAction("READ", "Appliance", details);
             return new ApiResponse<>(HttpStatus.OK.value(), "Appliances fetched successfully", appliances);
         } catch (Exception e) {
             logger.error("Error fetching appliances: {}", e.getMessage(), e);
@@ -62,7 +71,9 @@ public class ApplianceController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteAppliance(@PathVariable Long id) {
         try {
-            applianceService.deleteAppliance(id);
+            Appliance appliance = applianceService.deleteAppliance(id);
+            String details = String.format("Appliance '%s' (ID: %d) deleted", appliance.getName(), id);
+            logService.logAction("DELETE", "Appliance", details);
             return new ApiResponse<>(HttpStatus.OK.value(), "Appliance deleted successfully", null);
         } catch (IllegalArgumentException e) {
             logger.error("Appliance deletion failed: {}", e.getMessage());
@@ -89,6 +100,8 @@ public class ApplianceController {
             clientDto.setCompanyName(appliance.getClient().getCompanyName());
             clientDto.setName(appliance.getClient().getName());
             responseDTO.setClient(clientDto);
+            String details = String.format("Appliance '%s' (ID: %d) updated for client '%s'", appliance.getName(), id, appliance.getClient().getName());
+            logService.logAction("UPDATE", "Appliance", details);
             return new ApiResponse<>(HttpStatus.OK.value(), "Appliance updated successfully", responseDTO);
         } catch (IllegalArgumentException e) {
             logger.error("Appliance update failed: {}", e.getMessage());

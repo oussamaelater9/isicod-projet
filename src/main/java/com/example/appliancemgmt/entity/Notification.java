@@ -2,9 +2,7 @@ package com.example.appliancemgmt.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -22,7 +20,7 @@ public class Notification {
     private Long clientId;
 
     @ElementCollection
-    private List<Long> readBy = new ArrayList<>();
+    private Set<Long> readBy = new HashSet<>(); // Changed to Set
 
     // Getters and setters
     public Long getId() {
@@ -65,11 +63,11 @@ public class Notification {
         this.clientId = clientId;
     }
 
-    public List<Long> getReadBy() {
+    public Set<Long> getReadBy() {
         return readBy;
     }
 
-    public void setReadBy(List<Long> readBy) {
+    public void setReadBy(Set<Long> readBy) {
         this.readBy = readBy;
     }
 }

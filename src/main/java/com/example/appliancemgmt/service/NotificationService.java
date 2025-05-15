@@ -10,10 +10,10 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class NotificationService {
@@ -24,6 +24,7 @@ public class NotificationService {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
     @Autowired
     private UserRepository userRepository;
 
@@ -34,7 +35,7 @@ public class NotificationService {
         notification.setCreatedAt(LocalDateTime.now());
         notification.setSenderId(senderId);
         notification.setClientId(clientId);
-        notification.setReadBy(new ArrayList<>());
+        notification.setReadBy(new HashSet<>()); // Changed to Set
         try {
             notification = notificationRepository.save(notification);
             messagingTemplate.convertAndSend("/topic/notifications", notification);
@@ -56,7 +57,7 @@ public class NotificationService {
                     notification.setCreatedAt(n.getCreatedAt());
                     notification.setSenderId(n.getSenderId());
                     notification.setClientId(n.getClientId());
-                    notification.setReadBy(n.getReadBy() != null ? n.getReadBy() : new ArrayList<>());
+                    notification.setReadBy(n.getReadBy() != null ? n.getReadBy() : new HashSet<>()); // Changed to Set
                     return notification;
                 })
                 .toList();
@@ -84,10 +85,11 @@ public class NotificationService {
                     return new IllegalArgumentException("Notification not found: id=" + id);
                 });
 
-        List<Long> readBy = notification.getReadBy() != null ? notification.getReadBy() : List.of();
+        Set<Long> readBy = notification.getReadBy() != null ? notification.getReadBy() : new HashSet<>();
         if (!readBy.contains(userId)) {
             logger.info("Adding userId={} to readBy for notification id={}", userId, id);
-            notification.getReadBy().add(userId);
+            readBy.add(userId);
+            notification.setReadBy(readBy); // Update the readBy Set
             try {
                 notificationRepository.save(notification);
                 logger.info("Notification marked as read successfully: id={}", id);
@@ -99,7 +101,6 @@ public class NotificationService {
             logger.info("Notification already marked as read by userId={}", userId);
         }
     }
-
 
     public void deleteNotification(Long notificationId) {
         logger.info("Deleting notification: id={}", notificationId);
