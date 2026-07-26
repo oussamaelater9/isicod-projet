@@ -20,7 +20,7 @@ import java.util.Arrays;
 
 @Configuration
 @EnableMethodSecurity
-public class SecurityConfig {
+public class SecurityConfig      {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtRequestFilter jwtRequestFilter) throws Exception {
@@ -60,14 +60,24 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:4200",
+                "https://isicod-projet-frontend-git-mynewbranch-oussamaelater9s-projects.vercel.app"
+        ));
+
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        ));
+
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }
+
