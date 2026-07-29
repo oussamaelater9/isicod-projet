@@ -62,4 +62,7 @@ public class SignUpRequest {
     public void setAddress(String address) {
         this.address = address;
     }
+
+
+
 }
