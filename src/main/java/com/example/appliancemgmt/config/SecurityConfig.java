@@ -28,6 +28,7 @@ public class SecurityConfig      {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/v3/api-docs/**",
@@ -63,7 +64,7 @@ public class SecurityConfig      {
 
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:4200",
-                "https://isicod-projet-frontend-git-mynewbranch-oussamaelater9s-projects.vercel.app"
+                "appliance-mgmt.vercel.app"
         ));
 
         configuration.setAllowedMethods(Arrays.asList(
