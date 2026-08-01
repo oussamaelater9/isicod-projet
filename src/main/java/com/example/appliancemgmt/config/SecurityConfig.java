@@ -64,7 +64,7 @@ public class SecurityConfig      {
 
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:4200",
-                "appliance-mgmt.vercel.app"
+                "https://appliance-mgmt.vercel.app"
         ));
 
         configuration.setAllowedMethods(Arrays.asList(
