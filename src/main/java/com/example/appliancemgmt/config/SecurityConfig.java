@@ -20,28 +20,37 @@ import java.util.Arrays;
 
 @Configuration
 @EnableMethodSecurity
-public class SecurityConfig      {
+public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtRequestFilter jwtRequestFilter) throws Exception {
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+
                         .requestMatchers("/actuator/**").permitAll()
+
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/v3/api-docs/**",
-                                "/api/notifications/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/ws/**"
                         ).permitAll()
-                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "SUPERADMIN", "CONSULTANT")
-                        .requestMatchers("/api/roles/**").hasRole("SUPERADMIN")
+
+                        .requestMatchers("/api/users/**")
+                        .hasAnyRole("ADMIN", "SUPERADMIN", "CONSULTANT")
+
+                        .requestMatchers("/api/roles/**")
+                        .hasRole("SUPERADMIN")
+
                         .anyRequest().authenticated()
+
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -50,16 +59,22 @@ public class SecurityConfig      {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder();
+
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+            throws Exception {
+
         return authConfig.getAuthenticationManager();
+
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(Arrays.asList(
@@ -68,17 +83,22 @@ public class SecurityConfig      {
         ));
 
         configuration.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTIONS"
         ));
 
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
 }
-

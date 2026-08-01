@@ -1,6 +1,5 @@
 package com.example.appliancemgmt.util;
 
-import com.example.appliancemgmt.entity.Role;
 import com.example.appliancemgmt.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -19,7 +18,9 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
-    // Generate token for a user
+    @Value("${jwt.expiration}")
+    private long expiration;
+
     public String generateToken(String username, User.Role role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
@@ -27,43 +28,40 @@ public class JwtUtil {
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
-        long expiration = 1000 * 60 * 60 * 24 * 365 * 30; // ~30 years (for testing)
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000))
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
     }
 
-    // Validate token
     public Boolean validateToken(String token, String username) {
         final String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username) && !isTokenExpired(token));
+        return extractedUsername.equals(username) && !isTokenExpired(token);
     }
 
-    // Extract username from token
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // Extract role from token
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
-    // Extract specific claim
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+        return Jwts.parser()
+                .setSigningKey(secret)
+                .parseClaimsJws(token)
+                .getBody();
     }
 
-    // Check if token is expired
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
