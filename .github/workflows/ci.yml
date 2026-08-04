@@ -25,8 +25,13 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - name: Show environment
+        run: |
+          java -version
+          mvn -version
+
       - name: Build and run tests
-        run: mvn clean verify
+        run: mvn clean verify -e
 
       - name: Build Docker image
         run: docker build -t appliancemgmt .
