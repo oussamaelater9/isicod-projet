@@ -36,39 +36,32 @@ public class PasswordResetService {
     @Transactional
     public void forgotPassword(String email) {
 
-        log.info("Email received: '{}'", email);
-
-        log.info("===== USERS IN DATABASE =====");
-
-        userRepository.findAll().forEach(u ->
-                log.info("ID={} USERNAME={} EMAIL={}",
-                        u.getId(),
-                        u.getUsername(),
-                        u.getEmail())
-        );
+        log.info("Password reset requested for email: {}", email);
 
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
         if (optionalUser.isEmpty()) {
-
             log.warn("Password reset requested for unknown email: {}", email);
-
             return;
         }
 
         User user = optionalUser.get();
 
+        // Delete any existing token for this user
         tokenRepository.findByUserId(user.getId())
-                .ifPresent(tokenRepository::delete);
+                .ifPresent(existingToken -> {
+                    tokenRepository.delete(existingToken);
+                    tokenRepository.flush();
+                });
 
+        // Generate new token
         String token = UUID.randomUUID().toString();
 
-        PasswordResetToken passwordResetToken =
-                new PasswordResetToken(
-                        token,
-                        LocalDateTime.now().plusMinutes(30),
-                        user
-                );
+        PasswordResetToken passwordResetToken = new PasswordResetToken(
+                token,
+                LocalDateTime.now().plusMinutes(30),
+                user
+        );
 
         tokenRepository.save(passwordResetToken);
 
