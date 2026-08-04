@@ -21,7 +21,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties = {
         "frontend.url=http://localhost:4200",
         "spring.mail.host=localhost",
-        "spring.mail.port=25"
+        "spring.mail.port=25",
+        "spring.mail.username=test@test.com",
+        "spring.mail.password=test",
+        "jwt.secret=MySuperSecretKeyForJWTs"
 })
 @AutoConfigureMockMvc
 @Transactional

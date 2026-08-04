@@ -12,7 +12,7 @@ public class EmailServiceImpl implements EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    @Value("${frontend.url}")
+    @Value("${frontend.url:http://localhost:4200}")
     private String frontendUrl;
 
     @Override
