@@ -1,25 +1,24 @@
 package com.example.appliancemgmt.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.appliancemgmt.entity.User;
 import com.example.appliancemgmt.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@ActiveProfiles("test")
 class UserIntegrationTest {
 
     @Autowired
@@ -30,9 +29,6 @@ class UserIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @MockitoBean
-    private JavaMailSender javaMailSender;
 
     @Test
     @WithMockUser(roles = "ADMIN")
