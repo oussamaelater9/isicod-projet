@@ -1,16 +1,22 @@
 package com.example.appliancemgmt.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 @Service
 public class EmailServiceImpl implements EmailService {
 
     @Autowired
     private JavaMailSender mailSender;
+    private static final Logger log =
+            LoggerFactory.getLogger(EmailServiceImpl.class);
 
     @Value("${frontend.url:http://localhost:4200}")
     private String frontendUrl;
@@ -42,6 +48,13 @@ Regards,
 Appliance Management Team
 """.formatted(resetLink));
 
-        mailSender.send(message);
+        try {
+            mailSender.send(message);
+            log.info("MAIL SENT");
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("MAIL ERROR", e);
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -96,7 +96,9 @@ public class PasswordResetService {
 
         userRepository.save(user);
 
+        
         tokenRepository.delete(resetToken);
+        tokenRepository.flush();
 
         log.info("Password successfully changed for user {}", user.getUsername());
     }
