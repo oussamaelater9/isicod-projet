@@ -2,12 +2,12 @@ package com.example.appliancemgmt.integration;
 
 import com.example.appliancemgmt.entity.User;
 import com.example.appliancemgmt.repository.UserRepository;
+import com.example.appliancemgmt.service.EmailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -20,10 +20,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(properties = {
         "frontend.url=http://localhost:4200",
-        "spring.mail.host=localhost",
-        "spring.mail.port=25",
-        "spring.mail.username=test@test.com",
-        "spring.mail.password=test",
         "jwt.secret=MySuperSecretKeyForJWTs"
 })
 @AutoConfigureMockMvc
@@ -42,7 +38,7 @@ class UserIntegrationTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private JavaMailSender mailSender;
+    private EmailService emailService;
 
     @Test
     @WithMockUser(roles = "ADMIN")
