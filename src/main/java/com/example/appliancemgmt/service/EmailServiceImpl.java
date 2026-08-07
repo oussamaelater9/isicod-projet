@@ -27,8 +27,7 @@ public class EmailServiceImpl implements EmailService {
 
         try {
 
-            String resetLink =
-                    frontendUrl + "/reset-password?token=" + token;
+            String resetLink = frontendUrl + "/reset-password?token=" + token;
 
             Resend resend = new Resend(apiKey);
 
@@ -38,17 +37,17 @@ public class EmailServiceImpl implements EmailService {
                     .subject("Reset your Appliance Management password")
                     .html("""
                             <h2>Password Reset</h2>
-
+                            
                             <p>We received a request to reset your password.</p>
-
+                            
                             <p>
                                 <a href="%s">
                                     Reset Password
                                 </a>
                             </p>
-
+                            
                             <p>This link expires in 30 minutes.</p>
-
+                            
                             <p>If you didn't request this, simply ignore this email.</p>
                             """.formatted(resetLink))
                     .build();

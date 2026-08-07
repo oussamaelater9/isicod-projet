@@ -28,6 +28,7 @@ public class GlobalExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .findFirst()
                 .orElse("Validation failed");
+
         return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), message, null);
     }
 
@@ -43,20 +44,20 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ResponseBody
     public ApiResponse<Void> handleAccessDeniedException(AccessDeniedException ex) {
-        return new ApiResponse<>(HttpStatus.FORBIDDEN.value(),
-                "Access denied: Invalid or expired token", null);
+        return new ApiResponse<>(
+                HttpStatus.FORBIDDEN.value(),
+                "Access denied: Invalid or expired token",
+                null
+        );
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public ApiResponse<Void> handleGeneralException(Exception ex) {
-
-        ex.printStackTrace();
-
         return new ApiResponse<>(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                ex.getClass().getName() + ": " + ex.getMessage(),
+                "An unexpected error occurred",
                 null
         );
     }
