@@ -43,13 +43,21 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ResponseBody
     public ApiResponse<Void> handleAccessDeniedException(AccessDeniedException ex) {
-        return new ApiResponse<>(HttpStatus.FORBIDDEN.value(), "Access denied: Invalid or expired token", null);
+        return new ApiResponse<>(HttpStatus.FORBIDDEN.value(),
+                "Access denied: Invalid or expired token", null);
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public ApiResponse<Void> handleGeneralException(Exception ex) {
-        return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
+
+        ex.printStackTrace();
+
+        return new ApiResponse<>(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                ex.getClass().getName() + ": " + ex.getMessage(),
+                null
+        );
     }
 }
